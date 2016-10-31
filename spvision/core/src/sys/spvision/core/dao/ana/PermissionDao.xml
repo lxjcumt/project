@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="sys.lion.core.dao.ana.PermissionDao">
+	
+	<resultMap type="Permission" id="resultMapPermission">
+		<id column="permission_id" 			property="id" 	/>
+        <result column="permission_name" 	property="name" />
+        <result column="permission_code" 	property="code" />
+        <result column="module_code" 		property="moduleCode" 		/>
+        <result column="url_filter" 		property="urlFilter" 		/>
+        <result column="status" 			property="status"	 		/>
+        <result column="status_name" 		property="statusName"		/>
+        <result column="create_datetime" 	property="createDatetime" 	/>
+        <result column="create_datetime" 	property="updateDatetime" 	/>
+	</resultMap>
+	
+	<select id="getPermissionsByUserId" parameterType="long" resultMap="resultMapPermission">
+		select distinct p.permission_id, p.permission_name, p.permission_code, p.module_code, p.url_filter, p.status, p.create_datetime, p.update_datetime
+  			from t_permission p, t_role_permission rp
+  			where p.permission_id = rp.permission_id and p.status='O'
+    			and rp.role_id in
+      				(select r.role_id from t_role r, t_user_role ur 
+          				where r.role_id=ur.role_id and r.status='O' and ur.user_id=#{userId})
+	</select>
+	
+	<select id="getPermissionByRoleId" parameterType="long" resultMap="resultMapPermission">
+		select p.permission_id, p.permission_name, p.permission_code, p.module_code, p.url_filter, p.status, p.create_datetime, p.update_datetime
+  			from t_permission p, t_role_permission rp
+  			where p.permission_id = rp.permission_id and p.status='O'
+    			and rp.role_id =#{roleId}
+	</select>
+	
+	<select id="getPermissionByRoleCaseId" parameterType="long" resultMap="resultMapPermission">
+		select p.permission_id, p.permission_name, p.permission_code, p.module_code, p.url_filter, p.status, p.create_datetime, p.update_datetime
+  			from t_permission p, t_role_permission_case rp
+  			where p.permission_id = rp.permission_id and p.status='O' and rp.status='O'
+    			and rp.role_id =#{roleId}
+	</select>
+	
+	<sql id="query_permission">
+		select
+			t.permission_id, t.permission_name, t.permission_code, t.module_code, 
+			t.url_filter, t.status, t.create_datetime, t.update_datetime
+		from
+			t_permission t 
+		where	
+			t.status = 'O'
+	</sql>
+	
+	<select id="query" parameterType="PermissionCriteria" resultMap="resultMapPermission">
+		<include refid="query_permission"/>
+		<include refid="conditions"/>
+    	order by t.permission_id 
+    	<if test="paging == true">
+			limit #{limit} offset #{offset}
+		</if>
+    </select>
+    
+    <select id="queryCount" resultType="java.lang.Integer" parameterType="PermissionCriteria">
+		select
+			count(t.permission_id)
+		from
+			t_permission t  
+		<include refid="conditions"/>
+	</select>
+	
+	<sql id="conditions">
+		<where>
+			<if test="name 		!= null and name 	!= ''">and t.permission_name like #{name}||'%' 	</if>
+    		<if test="code 		!= null and code 	!= ''">and t.permission_code like  #{code}||'%' </if>
+    		<if test="status 	!= null and status 	!= ''">and t.status = #{status}					</if>
+    	</where>
+	</sql>
+	
+</mapper>

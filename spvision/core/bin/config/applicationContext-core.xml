@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:cache="http://www.springframework.org/schema/cache"
+	xsi:schemaLocation="  
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd  
+            http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd  
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd  
+            http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.0.xsd  
+            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+            http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd"
+	default-autowire="byName" default-lazy-init="false">
+	
+	<!-- 采用DBCP连接池 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		
+		<property name="driverClassName" value="org.postgresql.Driver"></property>
+		<!-- <property name="url" value="jdbc:postgresql://10.162.194.151:5432/lion"></property> -->
+		<property name="url" value="jdbc:postgresql://127.0.0.1:5432/lion"></property>
+		<property name="username" value="postgres"></property>
+		<property name="password" value="123456"></property>
+		<property name="maxActive" value="100"></property>
+		<property name="maxIdle" value="30"></property>
+		<property name="maxWait" value="10"></property>
+		<property name="defaultAutoCommit" value="false"></property>
+		
+	</bean>
+
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!--指定要用到的连接池 -->
+		<property name="dataSource" ref="dataSource" />
+		<!-- 多个package用逗号或分号隔开 -->
+		<property name="typeAliasesPackage"
+			 value="sys.lion.core.entity.account,
+			sys.lion.core.entity.ana,
+			sys.lion.core.entity.bizDict,
+			sys.lion.core.entity.borrower,
+			sys.lion.core.entity.common,
+			sys.lion.core.entity.contract,
+			sys.lion.core.entity.fund,
+			sys.lion.core.entity.investment,
+			sys.lion.core.entity.investor,
+			sys.lion.core.entity.project,
+			sys.lion.core.entity.notify,
+			sys.lion.core.entity.transfer,
+			sys.lion.core.entity.company,
+			sys.lion.core.entity.contract,
+			sys.lion.core.entity.ar,
+			sys.lion.core.criteria.account,
+			sys.lion.core.criteria.ana,
+			sys.lion.core.criteria.borrower,
+			sys.lion.core.criteria.contract,
+			sys.lion.core.criteria.fund,
+			sys.lion.core.criteria.investment,
+			sys.lion.core.criteria.investor,
+			sys.lion.core.criteria.project,
+			sys.lion.core.criteria.notify,
+			sys.lion.core.criteria.common,
+			sys.lion.core.criteria.sms,
+			sys.lion.core.criteria.report,
+			sys.lion.core.criteria.transfer,
+			sys.lion.core.criteria.company,
+			sys.lion.core.criteria.merchant,
+			sys.lion.core.criteria.contract,
+			sys.lion.core.criteria.ar,
+			sys.lion.core.criteria.util,
+			sys.lion.core.entity.sms,
+			sys.lion.core.entity.report,
+			sys.lion.core.entity.announ,
+			sys.lion.core.entity.merchant" />
+		<!-- 所有配置的mapper文件 -->
+		<property name="mapperLocations" value="classpath*:sys/lion/core/dao/**/*.xml" />
+	</bean>
+
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="defaultEncoding" value="utf-8" 	/>
+		<property name="maxUploadSize" value="20480000" 	/>
+		<property name="maxInMemorySize" value="1024000" 	/>
+	</bean>
+
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!-- 多个package用逗号或分号隔开 -->
+		<property name="basePackage"
+			value="
+			sys.lion.core.dao.account,
+			sys.lion.core.dao.ana,
+			sys.lion.core.dao.bizDict,
+			sys.lion.core.dao.borrower,
+			sys.lion.core.dao.common,
+			sys.lion.core.dao.contract,
+			sys.lion.core.dao.contract,
+			sys.lion.core.dao.fund,
+			sys.lion.core.dao.investment,
+			sys.lion.core.dao.investor,
+			sys.lion.core.dao.project,
+			sys.lion.core.dao.notify,
+			sys.lion.core.dao.announ,
+			sys.lion.core.dao.sms,
+			sys.lion.core.dao.report,
+			sys.lion.core.dao.util,
+			sys.lion.core.dao.merchant,
+			sys.lion.core.dao.transfer,
+			sys.lion.core.dao.company,
+			sys.lion.core.dao.contract,
+			sys.lion.core.dao.ar" />
+	</bean>
+
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+	<context:component-scan
+		base-package="sys.lion.core.service.ana,
+		sys.lion.core.service.account,
+		sys.lion.core.service.authenticate,
+		sys.lion.core.service.bizDict,
+		sys.lion.core.service.borrower,
+		sys.lion.core.service.common,
+		sys.lion.core.service.contract,
+		sys.lion.core.service.fund,
+		sys.lion.core.service.investment,
+		sys.lion.core.service.investor,
+		sys.lion.core.service.project,
+		sys.lion.core.service.notify,
+		sys.lion.core.service.timer,
+		sys.lion.core.service.sms,
+		sys.lion.core.service.report,
+		sys.lion.core.service.announ,
+		sys.lion.core.service.merchant,
+		sys.lion.core.service.transfer,
+		sys.lion.core.service.company,
+		sys.lion.core.service.contract,
+		sys.lion.core.service.ar,
+		sys.lion.core.service.work" />
+
+</beans> 

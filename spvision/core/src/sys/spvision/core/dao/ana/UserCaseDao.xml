@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="sys.lion.core.dao.ana.UserCaseDao">
+	<resultMap type="UserCase" id="resultMapUser">
+		<id column="user_id" property="id" />
+        <result column="user_name" property="name" />
+        <result column="user_login_name" property="loginName" />
+        <result column="user_login_password" property="loginPassword" />
+        <result column="status" property="status" />
+        <result column="status_name" property="statusName" />
+        <result column="pwd_err_cnt" property="pwdErrCnt" />
+        <result column="expiration_date" property="expirationDate" />
+        <result column="mobile" property="mobile" />
+        <result column="phone" property="phone" />
+        <result column="email" property="email" />
+        <result column="memo" property="memo" />
+        <result column="create_datetime" property="createDatetime" />
+        <result column="update_datetime" property="updateDatetime" />
+        <result column="dkey_serial_no" property="dkSerialNumber"/>
+        <result property="caseUserId" 		column="case_operator"      />
+		<result property="caseStatus" 		column="case_status"      />
+		<result property="caseOpenStatus" 		column="case_open_status"      />
+		<result property="caseTime" 		column="case_time"      />
+		<result property="caseJudgment" 		column="case_judgment"      />
+		<result property="realId" 				column="real_id"/>
+		<result property="lastCompanyCaseId"    column="last_company_case_id"/>
+		<result property="caseOwnerId" 			column="case_owner_id"/>
+		<result property="caseStatusDes"		column="update_des"/>
+	</resultMap>
+	
+	<select id="getById" parameterType="Long" resultMap="resultMapUser">
+		select u.user_id, u.user_login_name, u.user_name, u.user_login_password, u.status, us.status_name, 
+		u.pwd_err_cnt, u.expiration_date, u.mobile, u.phone, u.email, u.memo, u.create_datetime, u.update_datetime,
+		u.dkey_serial_no, u.case_operator, u.case_status, u.case_open_status, u.case_time, u.case_judgment, u.real_id, u.last_company_case_id, u.case_owner_id, c.update_des
+			from t_user_case u, tk_user_status us, tk_check c where u.status=us.status and u.case_status=c.update_type and u.user_id = #{id} and u.case_open_status='O'
+	</select>
+	
+	<insert id="insert" parameterType="UserCase" keyProperty="id" useGeneratedKeys="true">
+    		insert into t_user_case
+    			( user_name, user_login_name, user_login_password, status, pwd_err_cnt, expiration_date, mobile, phone, email, memo, create_datetime, update_datetime,dkey_serial_no, case_operator, case_status, case_open_status, case_time, case_judgment, real_id, last_company_case_id, case_owner_id)
+    		values
+    			( #{name}, #{loginName}, #{loginPassword}, 'O', 0, current_date + interval '1 year', #{mobile}, #{phone}, #{email}, #{memo}, current_timestamp, current_timestamp,#{dkSerialNumber}, #{caseUserId}, #{caseStatus}, #{caseOpenStatus}, current_timestamp, #{caseJudgment}, #{realId}, #{lastCompanyCaseId}, #{caseOwnerId})
+    </insert>
+    
+    <update id="update" parameterType="User">
+    	update t_user_case set 
+    	case_open_status = #{caseOpenStatus}
+    	where user_id = #{id}
+    </update>
+    
+    <insert id="insertUserRole">
+    	insert into t_user_role_case ( user_id, role_id, status)
+    	values ( #{userId}, #{roleId}, 'O')
+    </insert>
+    
+    <select id="queryCount" parameterType="UserCaseCriteria" resultType="int">
+		select count(*) from t_user_case u
+		<include refid="queryWhere"></include>
+	</select>
+	
+	<select id="query" parameterType="UserCaseCriteria" resultMap="resultMapUser">
+    	select u.user_id, u.user_login_name, u.user_name, u.user_login_password, u.status, us.status_name, 
+    	u.pwd_err_cnt, u.expiration_date, u.mobile, u.phone, u.email, u.memo, u.create_datetime, u.update_datetime,
+    	u.dkey_serial_no, u.case_operator, u.case_status, u.case_open_status, u.case_time, u.case_judgment, u.real_id, u.last_company_case_id, u.case_owner_id, c.update_des
+			from t_user_case u, tk_user_status us, tk_check c where u.status=us.status and u.case_status=c.update_type and u.case_open_status='O'
+			<if test="userId != null">
+				and u.user_id = #{userId}
+			</if>
+			<if test="userName!=null and userName!=''">
+				and u.user_name like  #{userName}||'%'
+			</if>
+			<if test="userLoginName !=null and userLoginName !=''">
+				and u.user_login_name like  #{userLoginName}||'%'
+			</if>
+			<if test="email!=null and email!=''">
+				and u.email like  #{email}||'%'
+			</if>
+			<if test="dkSerialNumber!=null and dkSerialNumber!=''">
+			    and u.dkey_serial_no = #{dkSerialNumber}
+			</if>
+			<if test="caseOperator != null">
+				and u.case_operator = #{caseOperator}
+			</if>
+			
+			<if test="caseStatus != null"> and 
+    			<foreach collection="caseStatus"  item="item" index="index" open="(" separator=" or " close=")">
+    			   u.case_status = #{item}
+    			</foreach>
+    		</if>
+		    order by create_datetime desc
+		    <if test="paging == true">
+		    	limit #{limit} offset #{offset}
+		    </if>
+    </select>
+    
+    <delete id="deleteAllUserRole">
+    	update t_user_role_case set status='C' where user_id = #{userId}
+    </delete>
+    
+    <sql id="queryWhere">
+		<where>
+			<if test="userId != null">
+				and u.user_id = #{userId}
+			</if>
+			<if test="userName!=null and userName!=''">
+				and u.user_name like  #{userName}||'%'
+			</if>
+			<if test="userLoginName !=null and userLoginName !=''">
+				and u.user_login_name like  #{userLoginName}||'%'
+			</if>
+			<if test="email!=null and email!=''">
+				and u.email like  #{email}||'%'
+			</if>
+			<if test="dkSerialNumber!=null and dkSerialNumber!=''">
+			    and u.dkey_serial_no = #{dkSerialNumber}
+			</if>
+			<if test="caseOperator != null">
+				and u.case_operator = #{caseOperator}
+			</if>
+			
+			<if test="caseStatus != null"> and 
+    			<foreach collection="caseStatus"  item="item" index="index" open="(" separator=" or " close=")">
+    			   u.case_status = #{item}
+    			</foreach>
+    		</if>
+    		 and u.case_open_status='O'
+		</where>
+	</sql>
+</mapper>
