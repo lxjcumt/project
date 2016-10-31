@@ -1,8 +1,9 @@
-package sys.spvision.core.entity.ana;
+﻿package sys.spvision.core.entity.ana;
 
 import java.sql.Timestamp;
 import java.sql.Date;
 import java.io.Serializable;
+//jjjj
 
 import org.hibernate.validator.constraints.Length;
 
